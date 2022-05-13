@@ -41,6 +41,18 @@ class UKF {
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
+  /**
+   * Calculates the square of a given number
+   * @param value Any double value
+   */
+  double powSquare(double value);
+
+  /**
+   * Updates the state and the state covariance matrix using a radar measurement
+   * @param value Give a double value/number that will be squared.
+   */
+  double Normalize(double theta);
+
 
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
@@ -95,6 +107,13 @@ class UKF {
 
   // Sigma point spreading parameter
   double lambda_;
+
+  // Normalization Innovation Square metric for radar
+  double NIS_radar_;
+
+  // Normalization Innovation Square metric for LIDAR
+  double NIS_laser_;
+  
 };
 
 #endif  // UKF_H
