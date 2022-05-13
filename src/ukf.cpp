@@ -144,7 +144,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             0, 0, 0, powSquare(std_radphi_), 0,
             0, 0, 0, 0, powSquare(std_radphi_);
     }
-    time_us_ = meas_package.timestamp_;
     // Update boolean after initializing state vector and process covariance matrix
     is_initialized_ = true; 
     return;
@@ -152,6 +151,8 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
   // Prediction Function call to generate and predict sigma points
   double delta_t = (meas_package.timestamp_ - time_us_) / 1000000.0;
+  time_us_ = meas_package.timestamp_;
+  
   Prediction(delta_t);
 
   // Update state and covariance vector based on sensor measurement type
