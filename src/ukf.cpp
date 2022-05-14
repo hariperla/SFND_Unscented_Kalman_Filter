@@ -21,10 +21,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 1.5;
+  std_a_ = 1;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 1;
+  std_yawdd_ = 0.8;
   
   /**
    * DO NOT MODIFY measurement noise values below.
@@ -156,11 +156,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Prediction(delta_t);
 
   // Update state and covariance vector based on sensor measurement type
-  if (meas_package.sensor_type_ == MeasurementPackage::SensorType::LASER) 
+  if (meas_package.sensor_type_ == MeasurementPackage::SensorType::LASER && use_laser_) 
   {
     UpdateLidar(meas_package);
   }
-  else
+  else if (meas_package.sensor_type_ == MeasurementPackage::SensorType::RADAR && use_radar_)
   {
     UpdateRadar(meas_package);
   }
@@ -221,7 +221,7 @@ void UKF::Prediction(double delta_t) {
     // avoid division by zero
     if (fabs(yawd) > 0.001) {
         px_p = px + v / yawd * ( sin(yaw + yawd * delta_t) - sin(yaw) );
-        py_p = px + v / yawd * ( cos(yaw) - cos(yaw + yawd * delta_t) );
+        py_p = py + v / yawd * ( cos(yaw) - cos(yaw + yawd * delta_t) );
     } else {
         px_p = px + v * delta_t * cos(yaw);
         py_p = py + v * delta_t * sin(yaw);
@@ -249,21 +249,21 @@ void UKF::Prediction(double delta_t) {
 
   /* Step 3 : Predicting Mean and Covariance */
   // Predict state mean
-  //x_.fill(0.0);
+  x_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; ++i) 
   {  // iterate over sigma points
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
   }
 
   // Predict covariance
+  P_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; ++i) 
   { // iterate over sigma points
     // state difference
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
     // angle normalization
-    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
-
+    while (x_diff(3) > M_PI) x_diff(3) -= 2. * M_PI;
+    while (x_diff(3) < -M_PI) x_diff(3) += 2. * M_PI;
     P_ = P_ + weights_(i) * x_diff * x_diff.transpose() ;
   }
 }
